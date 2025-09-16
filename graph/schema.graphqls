@@ -1,0 +1,27 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Payment {
+  id: ID!
+  amount: Float!
+  user: User!
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+
+type Query {
+  payments: [Payment!]!
+}
+
+input NewPayment {
+  amount: Float!
+  user_id: String!
+}
+
+type Mutation {
+  createPayment(input: NewPayment!): Payment!
+}
