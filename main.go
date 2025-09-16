@@ -1,14 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
+	"os"
+
+	"github.com/csolarz/graphql-server/controller"
 )
 
+const defaultPort = "8080"
+
 func main() {
-	fmt.Println("Servidor iniciado en http://localhost:8080/graphql")
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "pong!")
-	})
-	http.ListenAndServe(":8080", nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = defaultPort
+	}
+
+	controller.StartRouter()
+
+	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
