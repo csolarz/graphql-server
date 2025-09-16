@@ -6,6 +6,7 @@ graphql server example in golang
 
 Model are located in /graph/schema.graphqls  , if you need to update first modify schema.graphqls then run: 
 
-make model
-
+``` 
+  make graph-model
+`
 
