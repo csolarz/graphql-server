@@ -36,6 +36,7 @@ func queryController() *handler.Server {
 	return srv
 }
 
+//nolint:errcheck
 func pingController(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("pong"))
