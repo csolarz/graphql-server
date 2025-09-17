@@ -64,8 +64,8 @@ jobs:
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v3
       with:
-        version: latest
-        args: --timeout=10m
+        version: v1.64.5
+        args: --timeout=10m --out-format=colored-line-number
 
   sast:
     name: SAST Scan
