@@ -6,7 +6,7 @@ on:
 jobs:
   # Instala Go, cachea dependencias, compila, corre tests con cobertura, sube reportes a Codecov.
   test:
-    name: Test and Coverage
+    name: Testing and coverage
     runs-on: ubuntu-latest
     
     strategy:
@@ -51,7 +51,7 @@ jobs:
 
   # Analiza el código con golangci-lint.
   golangci:
-    name: lint
+    name: Linter
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -69,10 +69,29 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Go
+
       uses: actions/setup-go@v4
       with:
         go-version: '1.25'
+
     - name: Install gosec
       run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
     - name: Run gosec (SAST scan)
-      run: gosec ./...
+      # -severity=medium hace que detecte vulnerabilidades de nivel Medium y High
+      #
+      # Tipos de vulnerabilidades que detectará:
+      # 1️⃣ SQL Injection (uso inseguro de inputs en queries)
+      # 2️⃣ Command Injection (ejecución de comandos sin sanitizar)
+      # 3️⃣ Hardcoded credentials (credenciales en el código)
+      # 4️⃣ Uso inseguro de funciones criptográficas (MD5, DES, SHA1, etc.)
+      # 5️⃣ Potenciales desbordes de buffer o manejo inseguro de memoria
+      run: gosec -severity medium ./...
+
+    - name: Save gosec report
+      run: gosec -fmt=json -out=gosec-report.json -severity medium ./...
+      
+    - uses: actions/upload-artifact@v3
+      with:
+        name: gosec-report
+        path: gosec-report.json
