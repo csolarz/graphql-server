@@ -7,3 +7,6 @@ test:
 cover-html: test
 	go tool cover -html=coverage.out -o coverage.html
 	sensible-browser coverage.html
+
+lint:
+	golangci-lint run;
