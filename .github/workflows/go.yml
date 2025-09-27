@@ -41,13 +41,19 @@ jobs:
     - name: Run tests
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
     
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+    - name: Generate coverage report
+      run: go tool cover -html=coverage.out -o coverage.html
+    
+    - name: Display coverage summary
+      run: go tool cover -func=coverage.out
+    
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
       with:
-        file: ./coverage.out
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+        name: coverage-report
+        path: |
+          coverage.out
+          coverage.html
 
   # Analiza el código con golangci-lint.
   golangci:
