@@ -2,19 +2,17 @@
 #
 # https://gqlgen.com/getting-started/
 
-type Payment {
-  id: ID!
-  amount: Float!
-  user: User!
-}
+
 
 type User {
   id: ID!
   name: String!
 }
 
-type Query {
-  payments: [Payment!]!
+type Payment {
+  id: ID!
+  amount: Float!
+  user: User!
 }
 
 input NewPayment {
@@ -22,6 +20,11 @@ input NewPayment {
   user_id: String!
 }
 
+type Query {
+  payments: [Payment!]!
+  users: [User!]!
+}
+
 type Mutation {
-  createPayment(input: NewPayment!): Payment!
+  create_payment(input: NewPayment!): Payment!
 }

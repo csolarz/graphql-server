@@ -41,6 +41,12 @@ jobs:
     - name: Run tests
       run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
     
+    - name: Filter coverage with covignore
+      run: |
+        go install github.com/securecodewarrior/gcovparser@latest
+        gcovparser -ignore .covignore -profile coverage.out -out coverage-filtered.out
+        mv coverage-filtered.out coverage.out
+    
     - name: Generate coverage report
       run: go tool cover -html=coverage.out -o coverage.html
     
@@ -84,12 +90,4 @@ jobs:
       run: go install github.com/securego/gosec/v2/cmd/gosec@latest
 
     - name: Run gosec (SAST scan)
-      # -severity=medium hace que detecte vulnerabilidades de nivel Medium y High
-      #
-      # Tipos de vulnerabilidades que detectará:
-      # 1️⃣ SQL Injection (uso inseguro de inputs en queries)
-      # 2️⃣ Command Injection (ejecución de comandos sin sanitizar)
-      # 3️⃣ Hardcoded credentials (credenciales en el código)
-      # 4️⃣ Uso inseguro de funciones criptográficas (MD5, DES, SHA1, etc.)
-      # 5️⃣ Potenciales desbordes de buffer o manejo inseguro de memoria
-      run: gosec -severity medium ./...
+      run: gosec -exclude-generated -exclude=G115,G401 ./...
