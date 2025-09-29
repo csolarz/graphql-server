@@ -19,8 +19,10 @@ func StartRouter() {
 }
 
 func queryController() *handler.Server {
+	// Crear servicios
+	resolver := registerDependencies()
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &resolver}))
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -38,5 +40,5 @@ func queryController() *handler.Server {
 
 func pingController(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("pong"))
+	_, _ = w.Write([]byte("pong")) // Explicitly handle the error
 }

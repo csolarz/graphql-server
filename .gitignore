@@ -32,3 +32,4 @@ internal/
 # Editor/IDE
 __debug*
 /.vscode
+coverage-summary.txt

@@ -6,19 +6,23 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/csolarz/graphql-server/graph/model"
 )
 
 // CreatePayment is the resolver for the createPayment field.
 func (r *mutationResolver) CreatePayment(ctx context.Context, input model.NewPayment) (*model.Payment, error) {
-	panic(fmt.Errorf("not implemented: CreatePayment - createPayment"))
+	return r.Service.CreatePayment(ctx, input)
 }
 
 // Payments is the resolver for the payments field.
 func (r *queryResolver) Payments(ctx context.Context) ([]*model.Payment, error) {
-	panic(fmt.Errorf("not implemented: Payments - payments"))
+	return r.Service.Payments(ctx)
+}
+
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	return r.Service.Users(ctx)
 }
 
 // Mutation returns MutationResolver implementation.
