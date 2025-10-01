@@ -72,8 +72,8 @@ type MutationResolver interface {
 	CreatePayment(ctx context.Context, input model.NewPayment) (*model.Payment, error)
 }
 type QueryResolver interface {
-	Payments(ctx context.Context) ([]*model.Payment, error)
-	Users(ctx context.Context) ([]*model.User, error)
+	Payments(ctx context.Context) (*model.Payment, error)
+	Users(ctx context.Context) (*model.User, error)
 }
 
 type executableSchema struct {
@@ -497,7 +497,7 @@ func (ec *executionContext) _Query_payments(ctx context.Context, field graphql.C
 			return ec.resolvers.Query().Payments(ctx)
 		},
 		nil,
-		ec.marshalNPayment2ᚕᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐPaymentᚄ,
+		ec.marshalNPayment2ᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐPayment,
 		true,
 		true,
 	)
@@ -534,7 +534,7 @@ func (ec *executionContext) _Query_users(ctx context.Context, field graphql.Coll
 			return ec.resolvers.Query().Users(ctx)
 		},
 		nil,
-		ec.marshalNUser2ᚕᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐUserᚄ,
+		ec.marshalNUser2ᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐUser,
 		true,
 		true,
 	)
@@ -2815,50 +2815,6 @@ func (ec *executionContext) marshalNPayment2githubᚗcomᚋcsolarzᚋgraphqlᚑs
 	return ec._Payment(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNPayment2ᚕᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐPaymentᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Payment) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNPayment2ᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐPayment(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) marshalNPayment2ᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐPayment(ctx context.Context, sel ast.SelectionSet, v *model.Payment) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -2885,48 +2841,8 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUser2ᚕᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.User) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐUser(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
+func (ec *executionContext) marshalNUser2githubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v model.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋcsolarzᚋgraphqlᚑserverᚋgraphᚋmodelᚐUser(ctx context.Context, sel ast.SelectionSet, v *model.User) graphql.Marshaler {

@@ -16,12 +16,12 @@ func (r *mutationResolver) CreatePayment(ctx context.Context, input model.NewPay
 }
 
 // Payments is the resolver for the payments field.
-func (r *queryResolver) Payments(ctx context.Context) ([]*model.Payment, error) {
+func (r *queryResolver) Payments(ctx context.Context) (*model.Payment, error) {
 	return r.Service.Payments(ctx)
 }
 
 // Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+func (r *queryResolver) Users(ctx context.Context) (*model.User, error) {
 	return r.Service.Users(ctx)
 }
 

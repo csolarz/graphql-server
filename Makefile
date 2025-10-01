@@ -1,3 +1,6 @@
+mocks:
+	go generate ./...
+
 graph-model:
 	go run github.com/99designs/gqlgen generate .
 

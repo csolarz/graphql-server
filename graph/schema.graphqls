@@ -21,8 +21,8 @@ input NewPayment {
 }
 
 type Query {
-  payments: [Payment!]!
-  users: [User!]!
+  payments: Payment!
+  users: User!
 }
 
 type Mutation {
