@@ -6,20 +6,20 @@ type Mutation struct {
 }
 
 type NewPayment struct {
-	Amount float64 `json:"amount"`
-	UserID string  `json:"user_id"`
+	Amount float64 `json:"amount" dynamodbav:"amount"`
+	UserID int64   `json:"user_id" dynamodbav:"user_id"`
 }
 
 type Payment struct {
-	ID     string  `json:"id"`
-	Amount float64 `json:"amount"`
-	User   *User   `json:"user"`
+	ID     int64   `json:"id" dynamodbav:"id"`
+	Amount float64 `json:"amount" dynamodbav:"amount"`
+	User   *User   `json:"user" dynamodbav:"user"`
 }
 
 type Query struct {
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID   int64  `json:"id" dynamodbav:"id"`
+	Name string `json:"name" dynamodbav:"name"`
 }

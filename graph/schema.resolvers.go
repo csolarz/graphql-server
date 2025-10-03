@@ -15,14 +15,14 @@ func (r *mutationResolver) CreatePayment(ctx context.Context, input model.NewPay
 	return r.Service.CreatePayment(ctx, input)
 }
 
-// Payments is the resolver for the payments field.
-func (r *queryResolver) Payments(ctx context.Context) ([]*model.Payment, error) {
-	return r.Service.Payments(ctx)
+// Payment is the resolver for the payment field.
+func (r *queryResolver) Payment(ctx context.Context, id int64) (*model.Payment, error) {
+	return r.Service.Payments(ctx, id)
 }
 
-// Users is the resolver for the users field.
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	return r.Service.Users(ctx)
+// User is the resolver for the user field.
+func (r *queryResolver) User(ctx context.Context, id int64) (*model.User, error) {
+	return r.Service.Users(ctx, id)
 }
 
 // Mutation returns MutationResolver implementation.

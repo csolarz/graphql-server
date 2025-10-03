@@ -17,12 +17,12 @@ type Payment {
 
 input NewPayment {
   amount: Float!
-  user_id: String!
+  user_id: ID!
 }
 
 type Query {
-  payments: [Payment!]!
-  users: [User!]!
+  payment(id: ID!): Payment
+  user(id: ID!): User
 }
 
 type Mutation {
