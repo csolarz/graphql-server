@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/csolarz/graphql-server/graph/model"
 	"github.com/csolarz/graphql-server/infraestructure"
@@ -29,9 +30,11 @@ func (r *RepositoryImpl) Payments(ctx context.Context, key string) (*model.Payme
 
 func (r *RepositoryImpl) CreatePayment(ctx context.Context, input model.NewPayment) (*model.Payment, error) {
 	payment := &model.Payment{
-		ID:     input.UserID, // Ajusta según tu modelo
+		ID:     time.Now().Unix(), // Ajusta según tu modelo
 		Amount: input.Amount,
+		User:   &model.User{ID: input.UserID, Name: "Test User"}, // Mock user, ajusta según sea necesario
 	}
+
 	err := r.dynamo.Set(ctx, "Payments", payment)
 	return payment, err
 }

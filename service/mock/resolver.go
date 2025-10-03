@@ -44,9 +44,9 @@ func (_m *Resolver) CreatePayment(ctx context.Context, input model.NewPayment) (
 	return r0, r1
 }
 
-// Payments provides a mock function with given fields: ctx
-func (_m *Resolver) Payments(ctx context.Context) (*model.Payment, error) {
-	ret := _m.Called(ctx)
+// Payments provides a mock function with given fields: ctx, id
+func (_m *Resolver) Payments(ctx context.Context, id int64) (*model.Payment, error) {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Payments")
@@ -54,19 +54,19 @@ func (_m *Resolver) Payments(ctx context.Context) (*model.Payment, error) {
 
 	var r0 *model.Payment
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*model.Payment, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Payment, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *model.Payment); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Payment); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.Payment)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -74,9 +74,9 @@ func (_m *Resolver) Payments(ctx context.Context) (*model.Payment, error) {
 	return r0, r1
 }
 
-// Users provides a mock function with given fields: ctx
-func (_m *Resolver) Users(ctx context.Context) (*model.User, error) {
-	ret := _m.Called(ctx)
+// Users provides a mock function with given fields: ctx, id
+func (_m *Resolver) Users(ctx context.Context, id int64) (*model.User, error) {
+	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Users")
@@ -84,19 +84,19 @@ func (_m *Resolver) Users(ctx context.Context) (*model.User, error) {
 
 	var r0 *model.User
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*model.User, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.User, error)); ok {
+		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *model.User); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.User); ok {
+		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*model.User)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}

@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
@@ -34,6 +35,7 @@ func NewDynamoImpl() *DynamoImpl {
 	endpoint := getEnv("DYNAMO_ENDPOINT", "http://localhost:8000")
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(region),
+		//nolint
 		config.WithEndpointResolver(
 			aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 				return aws.Endpoint{URL: endpoint, SigningRegion: region}, nil
@@ -43,8 +45,13 @@ func NewDynamoImpl() *DynamoImpl {
 	if err != nil {
 		panic(fmt.Sprintf("unable to load SDK config, %v", err))
 	}
+
+	db := dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
+		o.Credentials = credentials.NewStaticCredentialsProvider("dummy", "dummy", "")
+	})
+
 	return &DynamoImpl{
-		db: dynamodb.NewFromConfig(cfg),
+		db: db,
 	}
 }
 
@@ -56,7 +63,7 @@ func NewDynamoImplWithClient(client DynamoDBAPI) *DynamoImpl {
 // Get obtiene un item de DynamoDB y lo deserializa en out.
 func (r *DynamoImpl) Get(ctx context.Context, table string, id string, out any) error {
 	key := map[string]types.AttributeValue{
-		"id": &types.AttributeValueMemberS{Value: id},
+		"id": &types.AttributeValueMemberN{Value: id},
 	}
 	input := &dynamodb.GetItemInput{
 		TableName: &table,
