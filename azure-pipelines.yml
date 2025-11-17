@@ -39,12 +39,3 @@ steps:
     go build -v .
   workingDirectory: '$(system.defaultWorkingDirectory)'
   displayName: 'Get dependencies, then build'
-
-- task: Docker@1
-  displayName: build
-  inputs:
-    azureSubscriptionEndpoint: 'subscription id'
-    azureContainerRegistry: node-base-acr.azurecr.io
-    dockerFile: Dockerfile
-    imageName: 'node-base:$(Build.BuildId)'
-    includeLatestTag: true
