@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func StartRouter() {
+func StartRouter() *gin.Engine {
 	r := gin.Default()
 
 	dependencies := registerDependencies()
@@ -24,7 +24,7 @@ func StartRouter() {
 	})
 	r.GET("/ping", pingController)
 
-	r.Run()
+	return r
 }
 
 func pingController(c *gin.Context) {
