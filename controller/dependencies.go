@@ -3,13 +3,29 @@ package controller
 import (
 	"github.com/csolarz/graphql-server/graph"
 	"github.com/csolarz/graphql-server/infraestructure"
-	"github.com/csolarz/graphql-server/repository"
-	"github.com/csolarz/graphql-server/service"
+	"github.com/csolarz/graphql-server/usecase/api"
+	"github.com/csolarz/graphql-server/usecase/graphql"
 )
 
-func registerDependencies() graph.Resolver {
+type dependencies struct {
+	GraphQLController *GraphQLController
+	ApiController     *ApiController
+}
+
+func registerDependencies() dependencies {
 	dynamo := infraestructure.NewDynamoImpl()
-	repo := repository.NewRepositoryImpl(dynamo)
-	svc := service.NewService(repo)
-	return graph.Resolver{Service: svc}
+
+	// GraphQL dependencies
+	graphService := graphql.NewService(dynamo)
+	graphResolver := graph.NewResolver(graphService)
+	graphCtrl := NewGraphQLController(graphResolver)
+
+	// Loan dependencies
+	loanService := api.NewService(dynamo)
+	loanCtrl := NewApiController(loanService)
+
+	return dependencies{
+		GraphQLController: graphCtrl,
+		ApiController:     loanCtrl,
+	}
 }

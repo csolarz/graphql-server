@@ -38,7 +38,7 @@ func NewDynamoImpl() *DynamoImpl {
 		//nolint
 		config.WithEndpointResolver(
 			aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-				return aws.Endpoint{URL: endpoint, SigningRegion: region}, nil
+				return aws.Endpoint{URL: endpoint, SigningRegion: region, HostnameImmutable: true}, nil
 			}),
 		),
 	)
@@ -63,26 +63,37 @@ func NewDynamoImplWithClient(client DynamoDBAPI) *DynamoImpl {
 // Get obtiene un item de DynamoDB y lo deserializa en out.
 func (r *DynamoImpl) Get(ctx context.Context, table string, id string, out any) error {
 	key := map[string]types.AttributeValue{
-		"id": &types.AttributeValueMemberN{Value: id},
+		"_id": &types.AttributeValueMemberS{Value: fmt.Sprintf("%s_%s", table, id)},
 	}
+
 	input := &dynamodb.GetItemInput{
 		TableName: &table,
 		Key:       key,
 	}
+
 	result, err := r.db.GetItem(ctx, input)
 	if err != nil {
 		return err
 	}
+
 	if result.Item == nil {
-		// TODO: esto no es un error, manejarlo mejor
-		return fmt.Errorf("item not found")
+		return nil
 	}
-	return attributevalue.UnmarshalMap(result.Item, out)
+
+	// Deserializar el resultado
+	err = attributevalue.UnmarshalMap(result.Item, out)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Set almacena un item en DynamoDB usando el partition key explícito en la data struct.
 func (r *DynamoImpl) Set(ctx context.Context, table string, data any) error {
 	av, err := attributevalue.MarshalMap(data)
+	av["_id"] = &types.AttributeValueMemberS{Value: fmt.Sprintf("%s_%s", table, av["id"].(*types.AttributeValueMemberN).Value)}
+
 	if err != nil {
 		return err
 	}

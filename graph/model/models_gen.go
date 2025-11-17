@@ -2,24 +2,31 @@
 
 package model
 
-type Mutation struct {
+type Installment struct {
+	ID               int64   `json:"id"`
+	Loan             *Loan   `json:"loan"`
+	Number           int32   `json:"number"`
+	Amount           float64 `json:"amount"`
+	PrincipalPortion float64 `json:"principal_portion"`
+	InterestPortion  float64 `json:"interest_portion"`
+	Paid             bool    `json:"paid"`
 }
 
-type NewPayment struct {
-	Amount float64 `json:"amount" dynamodbav:"amount"`
-	UserID int64   `json:"user_id" dynamodbav:"user_id"`
-}
-
-type Payment struct {
-	ID     int64   `json:"id" dynamodbav:"id"`
-	Amount float64 `json:"amount" dynamodbav:"amount"`
-	User   *User   `json:"user" dynamodbav:"user"`
+type Loan struct {
+	ID           int64          `json:"id"`
+	UserID       int64          `json:"user_id" dynamodbav:"user_id"`
+	User         *User          `json:"user "`
+	Amount       float64        `json:"amount"`
+	InterestRate float64        `json:"interest_rate"`
+	TermMonths   int32          `json:"term_months"`
+	Installments []*Installment `json:"installments"`
 }
 
 type Query struct {
 }
 
 type User struct {
-	ID   int64  `json:"id" dynamodbav:"id"`
-	Name string `json:"name" dynamodbav:"name"`
+	ID    int64   `json:"id"`
+	Name  string  `json:"name"`
+	Loans []*Loan `json:"loans"`
 }

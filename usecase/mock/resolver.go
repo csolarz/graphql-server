@@ -14,54 +14,24 @@ type Resolver struct {
 	mock.Mock
 }
 
-// CreatePayment provides a mock function with given fields: ctx, input
-func (_m *Resolver) CreatePayment(ctx context.Context, input model.NewPayment) (*model.Payment, error) {
-	ret := _m.Called(ctx, input)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreatePayment")
-	}
-
-	var r0 *model.Payment
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, model.NewPayment) (*model.Payment, error)); ok {
-		return rf(ctx, input)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, model.NewPayment) *model.Payment); ok {
-		r0 = rf(ctx, input)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Payment)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, model.NewPayment) error); ok {
-		r1 = rf(ctx, input)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// Payments provides a mock function with given fields: ctx, id
-func (_m *Resolver) Payments(ctx context.Context, id int64) (*model.Payment, error) {
+// Installment provides a mock function with given fields: ctx, id
+func (_m *Resolver) Installment(ctx context.Context, id int64) (*model.Installment, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Payments")
+		panic("no return value specified for Installment")
 	}
 
-	var r0 *model.Payment
+	var r0 *model.Installment
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Payment, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Installment, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Payment); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Installment); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*model.Payment)
+			r0 = ret.Get(0).(*model.Installment)
 		}
 	}
 
@@ -74,12 +44,42 @@ func (_m *Resolver) Payments(ctx context.Context, id int64) (*model.Payment, err
 	return r0, r1
 }
 
-// Users provides a mock function with given fields: ctx, id
-func (_m *Resolver) Users(ctx context.Context, id int64) (*model.User, error) {
+// Loan provides a mock function with given fields: ctx, id
+func (_m *Resolver) Loan(ctx context.Context, id int64) (*model.Loan, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Users")
+		panic("no return value specified for Loan")
+	}
+
+	var r0 *model.Loan
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (*model.Loan, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) *model.Loan); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Loan)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// User provides a mock function with given fields: ctx, id
+func (_m *Resolver) User(ctx context.Context, id int64) (*model.User, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for User")
 	}
 
 	var r0 *model.User
