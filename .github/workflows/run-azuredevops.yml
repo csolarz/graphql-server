@@ -1,38 +1,23 @@
-name: Trigger Azure DevOps Classic Pipeline
+name: Trigger Azure DevOps on Release
 
 on:
   release:
-    types: [published, created, prereleased]
+    types: [published, created, prereleased]  # cualquier tipo de release
 
 jobs:
-  trigger:
+  trigger-azure-devops:
     runs-on: ubuntu-latest
-    steps:
-      - name: Trigger Azure DevOps Classic Build Pipeline
-        env:
-          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
-          ORG: ${{ vars.AZURE_DEVOPS_ORG }}
-          PROJECT: ${{ vars.AZURE_DEVOPS_PROJECT }}
-          PIPELINE_ID: ${{ vars.AZURE_DEVOPS_PIPELINE_ID }}
-        run: |
-          echo "Triggering classic pipeline..."
 
-          # Llamada al endpoint CORRECTO para pipelines clásicos
-          RESPONSE=$(curl -sS -u ":$AZURE_DEVOPS_PAT" \
+    steps:
+      - name: Trigger Azure DevOps Pipeline
+        env:
+          AZ_ORG: ${{ vars.AZURE_DEVOPS_ORG }}
+          AZ_PROJECT: ${{ vars.AZURE_DEVOPS_PROJECT }}
+          AZ_PIPELINE: ${{ vars.AZURE_DEVOPS_PIPELINE_ID }}
+          AZ_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+        run: |
+          curl -u ":$AZ_PAT" \
             -X POST \
             -H "Content-Type: application/json" \
-            -d "{\"definition\": {\"id\": $PIPELINE_ID}}" \
-            "https://dev.azure.com/$ORG/$PROJECT/_apis/build/builds?api-version=7.1-preview.7")
-
-          echo "Response from Azure DevOps:"
-          echo "$RESPONSE"
-
-          # Opcional: verifica que el ID de build exista
-          BUILD_ID=$(echo "$RESPONSE" | jq -r '.id')
-
-          if [ "$BUILD_ID" = "null" ] || [ -z "$BUILD_ID" ]; then
-            echo "❌ ERROR: no se pudo disparar el pipeline clásico"
-            exit 1
-          fi
-
-          echo "✔ Pipeline ejecutado correctamente. Build ID: $BUILD_ID"
+            -d '{"resources": {"repositories": {"self": {"refName": "refs/heads/main"}}}}' \
+            "https://dev.azure.com/$AZ_ORG/$AZ_PROJECT/_apis/pipelines/$AZ_PIPELINE/runs?api-version=7.1-preview.1"
