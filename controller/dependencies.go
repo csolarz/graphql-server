@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/csolarz/graphql-server/graph"
-	"github.com/csolarz/graphql-server/infraestructure"
+	"github.com/csolarz/graphql-server/infraestructure/document"
 	"github.com/csolarz/graphql-server/usecase/api"
 	"github.com/csolarz/graphql-server/usecase/graphql"
 )
@@ -13,7 +13,7 @@ type dependencies struct {
 }
 
 func registerDependencies() dependencies {
-	dynamo := infraestructure.NewDynamoImpl()
+	dynamo := document.NewDynamoImpl()
 
 	// GraphQL dependencies
 	graphService := graphql.NewService(dynamo)

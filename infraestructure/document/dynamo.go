@@ -1,6 +1,4 @@
-//go:generate mockery --name=Dynamo --output=./mock --outpkg=mock --case=snake
-//go:generate mockery --name=DynamoDBAPI --output=./mock --outpkg=mock --case=snake
-package infraestructure
+package document
 
 import (
 	"context"
@@ -15,12 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-// Dynamo define los métodos expuestos por DynamoImpl (alias interno, si se requiere)
-type Dynamo interface {
-	Get(ctx context.Context, table string, id string, out any) error
-	Set(ctx context.Context, table string, data any) error
-}
-
+//go:generate mockery --name=DynamoDBAPI --output=./mock --outpkg=mock --case=snake
 type DynamoDBAPI interface {
 	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
 	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
@@ -46,8 +39,12 @@ func NewDynamoImpl() *DynamoImpl {
 		panic(fmt.Sprintf("unable to load SDK config, %v", err))
 	}
 
+	key := "dummy"
+	secret := "dummy"
+	sessionToken := ""
+
 	db := dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
-		o.Credentials = credentials.NewStaticCredentialsProvider("dummy", "dummy", "")
+		o.Credentials = credentials.NewStaticCredentialsProvider(key, secret, sessionToken)
 	})
 
 	return &DynamoImpl{

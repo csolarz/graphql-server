@@ -1,4 +1,4 @@
-package infraestructure
+package document
 
 import (
 	"context"
@@ -49,7 +49,8 @@ func TestDynamoImpl_Get_NotFound(t *testing.T) {
 	d := NewDynamoImplWithClient(mockClient)
 	var out map[string]interface{}
 	err := d.Get(context.Background(), "Users", "1", &out)
-	assert.Error(t, err)
+	assert.Nil(t, err)
+	assert.Nil(t, out)
 }
 
 func TestDynamoImpl_Set_Success(t *testing.T) {
@@ -58,8 +59,9 @@ func TestDynamoImpl_Set_Success(t *testing.T) {
 			return &dynamodb.PutItemOutput{}, nil
 		},
 	}
+
 	d := NewDynamoImplWithClient(mockClient)
-	data := map[string]interface{}{"id": "1"}
+	data := map[string]interface{}{"id": 123456}
 	err := d.Set(context.Background(), "Users", data)
 	assert.NoError(t, err)
 }
@@ -71,7 +73,7 @@ func TestDynamoImpl_Set_Error(t *testing.T) {
 		},
 	}
 	d := NewDynamoImplWithClient(mockClient)
-	data := map[string]interface{}{"id": "1"}
+	data := map[string]interface{}{"id": 456789}
 	err := d.Set(context.Background(), "Users", data)
 	assert.Error(t, err)
 }

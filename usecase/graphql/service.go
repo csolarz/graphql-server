@@ -1,4 +1,3 @@
-//go:generate mockery --name=Resolver --output=./mock --outpkg=mock --case=snake
 package graphql
 
 import (
@@ -6,10 +5,12 @@ import (
 	"fmt"
 
 	"github.com/csolarz/graphql-server/graph/model"
-	"github.com/csolarz/graphql-server/infraestructure"
+	"github.com/csolarz/graphql-server/infraestructure/document"
 )
 
 // GraphQLService define la interfaz principal para los servicios de GraphQL
+//
+//go:generate mockery --name=ResolverUsecase --output=./mock --outpkg=mock --case=snake
 type ResolverUsecase interface {
 	// Users obtiene un usuario por ID
 	User(ctx context.Context, id int64) (*model.User, error)
@@ -22,10 +23,10 @@ type ResolverUsecase interface {
 }
 
 type Service struct {
-	repo infraestructure.Dynamo
+	repo document.KeyStore
 }
 
-func NewService(repo infraestructure.Dynamo) *Service {
+func NewService(repo document.KeyStore) *Service {
 	return &Service{repo: repo}
 }
 

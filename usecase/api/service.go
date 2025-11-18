@@ -6,23 +6,24 @@ import (
 	"time"
 
 	"github.com/csolarz/graphql-server/entities"
-	"github.com/csolarz/graphql-server/infraestructure"
+	"github.com/csolarz/graphql-server/infraestructure/document"
 )
 
 const LoansTable = "Loans"
 const UsersTable = "Users"
 
 type Service struct {
-	repo infraestructure.Dynamo
+	repo document.KeyStore
 }
 
+//go:generate mockery --name=Usecase --output=./mock --outpkg=mock --case=snake
 type Usecase interface {
 	NewLoan(ctx context.Context, request entities.LoanRequest) (*entities.Loan, error)
 	GetLoan(ctx context.Context, loanID int64) (*entities.Loan, error)
 	NewUser(ctx context.Context, request entities.UserRequest) (*entities.User, error)
 }
 
-func NewService(repo infraestructure.Dynamo) *Service {
+func NewService(repo document.KeyStore) *Service {
 	return &Service{repo: repo}
 }
 
