@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/csolarz/graphql-server/controller"
@@ -16,6 +17,7 @@ func main() {
 
 	engine := controller.StartRouter()
 
-	//nolint
-	engine.Run(":" + port)
+	if err := engine.Run(":" + port); err != nil {
+		log.Fatalf("failed to start server: %v", err)
+	}
 }
