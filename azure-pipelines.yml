@@ -1,8 +1,140 @@
-trigger: none
-pr: none
+# Pipeline de CI/CD para aplicación Go con Azure Container Registry
+# Trigger: Manual o desde API (GitHub Actions por release)
+# Versión Go: 1.25
+
+trigger: none  # Sin triggers automáticos, se dispara desde GitHub Actions
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-  - script: echo "Pipeline triggered by GitHub!"
+variables:
+  GO_VERSION: '1.25'
+  ACR_NAME: 'graphqlserver.azurecr.io'
+  IMAGE_NAME: 'graphqlserver'
+  SERVICE_CONNECTION: 'acr-graphqlserver'
+  # El tag de la imagen vendrá como parámetro desde GitHub Actions
+  IMAGE_TAG: $(Build.SourceBranchName)
+
+stages:
+- stage: Test
+  displayName: 'Testing & Quality'
+  jobs:
+  - job: Tests
+    displayName: 'Go Tests & Coverage'
+    steps:
+    - task: GoTool@0
+      displayName: 'Install Go $(GO_VERSION)'
+      inputs:
+        version: '$(GO_VERSION)'
+
+    - script: |
+        go mod download
+      displayName: 'Download dependencies'
+
+    - script: |
+        go mod verify
+      displayName: 'Verify dependencies'
+
+    - script: |
+        go build -v ./...
+      displayName: 'Build Go application'
+
+    - script: |
+        go test -race -covermode=atomic -v ./... -coverprofile=coverage.txt
+      displayName: 'Run tests with coverage'
+
+    - script: |
+        go tool cover -func=coverage.txt -o=coverage-summary.txt
+        COVERAGE=$(go tool cover -func=coverage.txt | grep total | awk '{print $3}' | sed 's/%//')
+        echo "##vso[task.setvariable variable=COVERAGE_PERCENT]$COVERAGE"
+        echo "Coverage: $COVERAGE%"
+        cat coverage-summary.txt
+      displayName: 'Calculate coverage'
+
+    - script: |
+        echo "Coverage: $(COVERAGE_PERCENT)%"
+        COVERAGE_INT=$(echo "$(COVERAGE_PERCENT)" | cut -d'.' -f1)
+        if [ "$COVERAGE_INT" -lt 10 ]; then
+          echo "##vso[task.logissue type=error]Coverage is below 10% ($(COVERAGE_PERCENT)%). Pipeline will fail."
+          exit 1
+        else
+          echo "##vso[task.complete result=Succeeded;]Coverage is $(COVERAGE_PERCENT)% - meets minimum requirement of 10%"
+        fi
+      displayName: 'Validate minimum coverage (10%)'
+
+    - task: PublishCodeCoverageResults@1
+      displayName: 'Publish coverage report'
+      inputs:
+        codeCoverageTool: 'Cobertura'
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/coverage.txt'
+        reportDirectory: '$(System.DefaultWorkingDirectory)'
+
+  - job: Linter
+    displayName: 'golangci-lint'
+    steps:
+    - task: GoTool@0
+      displayName: 'Install Go $(GO_VERSION)'
+      inputs:
+        version: '$(GO_VERSION)'
+
+    - script: |
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.4.0
+        export PATH=$PATH:$(go env GOPATH)/bin
+        golangci-lint --version
+      displayName: 'Install golangci-lint v2.4.0'
+
+    - script: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        golangci-lint run --timeout=5m
+      displayName: 'Run golangci-lint'
+
+  - job: SAST
+    displayName: 'SAST with gosec'
+    steps:
+    - task: GoTool@0
+      displayName: 'Install Go $(GO_VERSION)'
+      inputs:
+        version: '$(GO_VERSION)'
+
+    - script: |
+        go install github.com/securego/gosec/v2/cmd/gosec@latest
+      displayName: 'Install gosec'
+
+    - script: |
+        export PATH=$PATH:$(go env GOPATH)/bin
+        gosec -exclude-generated -exclude=G115,G401 ./...
+      displayName: 'Run gosec SAST scan'
+
+- stage: Build
+  displayName: 'Build & Push Docker Image'
+  dependsOn: Test
+  condition: succeeded()
+  jobs:
+  - job: Docker
+    displayName: 'Build and Push to ACR'
+    steps:
+    - task: Docker@2
+      displayName: 'Build Docker image'
+      inputs:
+        command: 'build'
+        repository: '$(IMAGE_NAME)'
+        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          $(IMAGE_TAG)
+          latest
+
+    - task: Docker@2
+      displayName: 'Push to Azure Container Registry'
+      inputs:
+        command: 'push'
+        repository: '$(IMAGE_NAME)'
+        containerRegistry: '$(SERVICE_CONNECTION)'
+        tags: |
+          $(IMAGE_TAG)
+          latest
+
+    - script: |
+        echo "✅ Image pushed successfully:"
+        echo "  $(ACR_NAME)/$(IMAGE_NAME):$(IMAGE_TAG)"
+        echo "  $(ACR_NAME)/$(IMAGE_NAME):latest"
+      displayName: 'Show image tags'
