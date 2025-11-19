@@ -2,22 +2,32 @@ name: Trigger Azure DevOps on Release
 
 on:
   release:
-    types: [published, created, prereleased]  # cualquier tipo de release
+    types: [published, created, prereleased]
 
 jobs:
   trigger-azure-devops:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get Release Tag
+        id: get_tag
+        run: |
+          echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
       - name: Trigger Azure DevOps Pipeline
         env:
           AZ_ORG: ${{ vars.AZURE_DEVOPS_ORG }}
           AZ_PROJECT: ${{ vars.AZURE_DEVOPS_PROJECT }}
           AZ_PIPELINE: ${{ vars.AZURE_DEVOPS_PIPELINE_ID }}
           AZ_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+          TAG_NAME: ${{ steps.get_tag.outputs.tag_name }}
         run: |
+          JSON_PAYLOAD=$(jq -n \
+            --arg tag "$TAG_NAME" \
+            '{resources:{repositories:{self:{refName:"refs/heads/main"}}}, variables:{RELEASE_TAG:{value:$tag}}}')
+
           curl -u ":$AZ_PAT" \
             -X POST \
             -H "Content-Type: application/json" \
-            -d '{"resources": {"repositories": {"self": {"refName": "refs/heads/main"}}}}' \
+            -d "$JSON_PAYLOAD" \
             "https://dev.azure.com/$AZ_ORG/$AZ_PROJECT/_apis/pipelines/$AZ_PIPELINE/runs?api-version=7.1-preview.1"
