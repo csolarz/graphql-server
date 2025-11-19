@@ -1,33 +1,46 @@
-name: Trigger Azure DevOps on Release
-
+name: Deploy to Azure
 on:
   release:
-    types: [published, created, prereleased]
+    types: [created]
 
 jobs:
   trigger-azure-devops:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Get Release Tag
-        id: get_tag
-        run: |
-          echo "tag_name=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.release.target_commitish }}
 
-      - name: Trigger Azure DevOps Pipeline
-        env:
-          AZ_ORG: ${{ vars.AZURE_DEVOPS_ORG }}
-          AZ_PROJECT: ${{ vars.AZURE_DEVOPS_PROJECT }}
-          AZ_PIPELINE: ${{ vars.AZURE_DEVOPS_PIPELINE_ID }}
-          AZ_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
-          TAG_NAME: ${{ steps.get_tag.outputs.tag_name }}
-        run: |
-          JSON_PAYLOAD=$(jq -n \
-            --arg tag "$TAG_NAME" \
-            '{resources:{repositories:{self:{refName:"refs/heads/main"}}}, variables:{RELEASE_TAG:{value:$tag}}}')
+    - name: Get branch name
+      id: branch
+      run: |
+        # Obtener la rama desde donde se creó el release
+        BRANCH="${{ github.event.release.target_commitish }}"
+        echo "branch_name=$BRANCH" >> $GITHUB_OUTPUT
+        echo "Release created from branch: $BRANCH"
 
-          curl -u ":$AZ_PAT" \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD" \
-            "https://dev.azure.com/$AZ_ORG/$AZ_PROJECT/_apis/pipelines/$AZ_PIPELINE/runs?api-version=7.1-preview.1"
+    - name: Get Release Tag
+      id: release
+      run: echo "tag_name=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+
+    - name: Trigger Azure DevOps Pipeline
+      run: |
+        curl -u ":${{ secrets.AZURE_DEVOPS_PAT }}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -d "{
+            \"templateParameters\": {
+              \"RELEASE_TAG\": \"${{ steps.release.outputs.tag_name }}\"
+            },
+            \"resources\": {
+              \"repositories\": {
+                \"self\": {
+                  \"refName\": \"refs/heads/${{ steps.branch.outputs.branch_name }}\"
+                }
+              }
+            }
+          }" \
+          "https://dev.azure.com/carlossolar20608/graphql-server/_apis/pipelines/1/runs?api-version=7.1-preview.1"
+      env:
+        AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
