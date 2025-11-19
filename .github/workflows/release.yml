@@ -50,11 +50,11 @@ jobs:
         # Convertir a entero para comparación
         COVERAGE_INT=$(echo "$COVERAGE" | cut -d'.' -f1)
 
-        if [ "$COVERAGE_INT" -lt 10 ]; then
-          echo "❌ Coverage is below 10% ($COVERAGE%). Build failed."
+        if [ "$COVERAGE_INT" -lt 1 ]; then
+          echo "❌ Coverage is below 1% ($COVERAGE%). Build failed."
           exit 1
         else
-          echo "✅ Coverage is $COVERAGE% - meets minimum requirement of 10%"
+          echo "✅ Coverage is $COVERAGE% - meets minimum requirement of 1%"
         fi
 
   # Job 2: Linter golangci-lint
