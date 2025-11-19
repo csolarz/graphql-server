@@ -7,29 +7,44 @@ package graph
 import (
 	"context"
 
+	"github.com/csolarz/graphql-server/graph/generated"
 	"github.com/csolarz/graphql-server/graph/model"
 )
 
-// CreatePayment is the resolver for the createPayment field.
-func (r *mutationResolver) CreatePayment(ctx context.Context, input model.NewPayment) (*model.Payment, error) {
-	return r.Service.CreatePayment(ctx, input)
+// Loan is the resolver for the loan field.
+func (r *installmentResolver) Loan(ctx context.Context, obj *model.Installment) (*model.Loan, error) {
+	return r.Service.Loan(ctx, obj.Loan.ID)
 }
 
-// Payment is the resolver for the payment field.
-func (r *queryResolver) Payment(ctx context.Context, id int64) (*model.Payment, error) {
-	return r.Service.Payments(ctx, id)
+// User is the resolver for the user field.
+func (r *loanResolver) User(ctx context.Context, obj *model.Loan) (*model.User, error) {
+	return r.Service.User(ctx, obj.UserID)
 }
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, id int64) (*model.User, error) {
-	return r.Service.Users(ctx, id)
+	return r.Service.User(ctx, id)
 }
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+// Loan is the resolver for the loan field.
+func (r *queryResolver) Loan(ctx context.Context, id int64) (*model.Loan, error) {
+	return r.Service.Loan(ctx, id)
+}
 
-// Query returns QueryResolver implementation.
-func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
+// Installment is the resolver for the installment field.
+func (r *queryResolver) Installment(ctx context.Context, id int64) (*model.Installment, error) {
+	return r.Service.Installment(ctx, id)
+}
 
-type mutationResolver struct{ *Resolver }
+// Installment returns generated.InstallmentResolver implementation.
+func (r *Resolver) Installment() generated.InstallmentResolver { return &installmentResolver{r} }
+
+// Loan returns generated.LoanResolver implementation.
+func (r *Resolver) Loan() generated.LoanResolver { return &loanResolver{r} }
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type installmentResolver struct{ *Resolver }
+type loanResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

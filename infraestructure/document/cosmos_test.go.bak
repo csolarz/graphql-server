@@ -1,0 +1,96 @@
+package document
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+func TestCosmosGet_OK(t *testing.T) {
+	ctx := context.Background()
+
+	mockClient := new(mocks.MockClient)
+	mockDb := new(mocks.MockDatabase)
+	mockContainer := new(mocks.MockContainer)
+
+	item := map[string]string{"id": "123", "name": "john"}
+	body, _ := json.Marshal(item)
+
+	mockResp := azcosmos.ItemResponse{
+		RawResponse: &http.Response{StatusCode: 200},
+		Value:       body,
+	}
+
+	mockClient.On("NewDatabase", "appdb").Return((*azcosmos.Database)(mockDb), nil)
+	mockDb.On("NewContainer", "users").Return((*azcosmos.Container)(mockContainer), nil)
+	mockContainer.On("ReadItem", mock.Anything, mock.Anything, "123", mock.Anything).
+		Return(mockResp, nil)
+
+	c := NewCosmosImplWithClient(mockClient, "appdb")
+
+	var out map[string]string
+
+	err := c.Get(ctx, "users", "123", &out)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "john", out["name"])
+}
+
+func TestCosmosGet_NotFound(t *testing.T) {
+	ctx := context.Background()
+
+	mockClient := new(mocks.MockClient)
+	mockDb := new(mocks.MockDatabase)
+	mockContainer := new(mocks.MockContainer)
+
+	mockResp := azcosmos.ItemResponse{
+		RawResponse: &http.Response{StatusCode: 404},
+		Value:       nil,
+	}
+
+	mockClient.On("NewDatabase", "appdb").Return((*azcosmos.Database)(mockDb), nil)
+	mockDb.On("NewContainer", "users").Return((*azcosmos.Container)(mockContainer), nil)
+	mockContainer.On("ReadItem", mock.Anything, mock.Anything, "999", mock.Anything).
+		Return(mockResp, nil)
+
+	c := NewCosmosImplWithClient(mockClient, "appdb")
+	var out map[string]string
+
+	err := c.Get(ctx, "users", "999", &out)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(out)) // vacío
+}
+
+func TestCosmosSet_OK(t *testing.T) {
+	ctx := context.Background()
+
+	mockClient := new(mocks.MockClient)
+	mockDb := new(mocks.MockDatabase)
+	mockContainer := new(mocks.MockContainer)
+
+	data := map[string]string{
+		"id":   "1",
+		"name": "john",
+	}
+	body, _ := json.Marshal(data)
+
+	mockResp := azcosmos.ItemResponse{
+		RawResponse: &http.Response{StatusCode: 200},
+	}
+
+	mockClient.On("NewDatabase", "appdb").Return((*azcosmos.Database)(mockDb), nil)
+	mockDb.On("NewContainer", "users").Return((*azcosmos.Container)(mockContainer), nil)
+	mockContainer.On("UpsertItem", mock.Anything, mock.Anything, body, mock.Anything).
+		Return(mockResp, nil)
+
+	c := NewCosmosImplWithClient(mockClient, "appdb")
+
+	err := c.Set(ctx, "users", data)
+
+	assert.NoError(t, err)
+}

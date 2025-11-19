@@ -1,0 +1,32 @@
+// ...existing code...
+package graph
+
+import (
+	"context"
+	"testing"
+
+	"github.com/csolarz/graphql-server/graph/model"
+	"github.com/stretchr/testify/assert"
+)
+
+type mockService struct{}
+
+func (m *mockService) User(ctx context.Context, id int64) (*model.User, error) {
+	return &model.User{ID: id, Name: "Test User"}, nil
+}
+
+func (m *mockService) Payments(ctx context.Context, id int64) (*model.Payment, error) {
+	return &model.Payment{ID: id, Amount: 100, User: &model.User{ID: id, Name: "Test User"}}, nil
+}
+
+func newTestResolver() *Resolver {
+	return &Resolver{Service: &mockService{}}
+}
+
+func Test_queryResolver_User(t *testing.T) {
+	r := &queryResolver{newTestResolver()}
+	user, err := r.User(context.Background(), int64(1))
+	assert.NoError(t, err)
+	assert.NotNil(t, user)
+	assert.Equal(t, "Test User", user.Name)
+}

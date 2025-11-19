@@ -1,6 +1,4 @@
-//go:generate mockery --name=Dynamo --output=./mock --outpkg=mock --case=snake
-//go:generate mockery --name=DynamoDBAPI --output=./mock --outpkg=mock --case=snake
-package infraestructure
+package document
 
 import (
 	"context"
@@ -15,12 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
 
-// Dynamo define los métodos expuestos por DynamoImpl (alias interno, si se requiere)
-type Dynamo interface {
-	Get(ctx context.Context, table string, id string, out any) error
-	Set(ctx context.Context, table string, data any) error
-}
-
+//go:generate mockery --name=DynamoDBAPI --output=./mock --outpkg=mock --case=snake
 type DynamoDBAPI interface {
 	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
 	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
@@ -38,7 +31,7 @@ func NewDynamoImpl() *DynamoImpl {
 		//nolint
 		config.WithEndpointResolver(
 			aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
-				return aws.Endpoint{URL: endpoint, SigningRegion: region}, nil
+				return aws.Endpoint{URL: endpoint, SigningRegion: region, HostnameImmutable: true}, nil
 			}),
 		),
 	)
@@ -46,8 +39,12 @@ func NewDynamoImpl() *DynamoImpl {
 		panic(fmt.Sprintf("unable to load SDK config, %v", err))
 	}
 
+	key := "dummy"
+	secret := "dummy"
+	sessionToken := ""
+
 	db := dynamodb.NewFromConfig(cfg, func(o *dynamodb.Options) {
-		o.Credentials = credentials.NewStaticCredentialsProvider("dummy", "dummy", "")
+		o.Credentials = credentials.NewStaticCredentialsProvider(key, secret, sessionToken)
 	})
 
 	return &DynamoImpl{
@@ -63,26 +60,37 @@ func NewDynamoImplWithClient(client DynamoDBAPI) *DynamoImpl {
 // Get obtiene un item de DynamoDB y lo deserializa en out.
 func (r *DynamoImpl) Get(ctx context.Context, table string, id string, out any) error {
 	key := map[string]types.AttributeValue{
-		"id": &types.AttributeValueMemberN{Value: id},
+		"_id": &types.AttributeValueMemberS{Value: fmt.Sprintf("%s_%s", table, id)},
 	}
+
 	input := &dynamodb.GetItemInput{
 		TableName: &table,
 		Key:       key,
 	}
+
 	result, err := r.db.GetItem(ctx, input)
 	if err != nil {
 		return err
 	}
+
 	if result.Item == nil {
-		// TODO: esto no es un error, manejarlo mejor
-		return fmt.Errorf("item not found")
+		return nil
 	}
-	return attributevalue.UnmarshalMap(result.Item, out)
+
+	// Deserializar el resultado
+	err = attributevalue.UnmarshalMap(result.Item, out)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Set almacena un item en DynamoDB usando el partition key explícito en la data struct.
 func (r *DynamoImpl) Set(ctx context.Context, table string, data any) error {
 	av, err := attributevalue.MarshalMap(data)
+	av["_id"] = &types.AttributeValueMemberS{Value: fmt.Sprintf("%s_%s", table, av["id"].(*types.AttributeValueMemberN).Value)}
+
 	if err != nil {
 		return err
 	}

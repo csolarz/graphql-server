@@ -33,3 +33,4 @@ internal/
 __debug*
 /.vscode
 coverage-summary.txt
+*.bak

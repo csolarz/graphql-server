@@ -1,6 +1,6 @@
 # Makefile
 mocks:
-	go generate ./...∫
+	go generate ./...
 
 graph-model:
 	go run github.com/99designs/gqlgen generate .
@@ -25,28 +25,13 @@ sast:
 # Running locally with DynamoDB Local
 
 start-local:
-	docker compose up -d
-	sleep 3
-	make create-local-tables
+	docker-compose up -d
+	scripts/dynamo-local.sh
 
-create-local-tables:
-	aws dynamodb create-table \
-		--table-name Payments \
-		--attribute-definitions AttributeName=id,AttributeType=N \
-		--key-schema AttributeName=id,KeyType=HASH \
-		--provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
-		--endpoint-url http://localhost:8000 \
-		--region us-west-2
-	aws dynamodb create-table \
-		--table-name Users \
-		--attribute-definitions AttributeName=id,AttributeType=N \
-		--key-schema AttributeName=id,KeyType=HASH \
-		--provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
-		--endpoint-url http://localhost:8000 \
-		--region us-west-2;
 
 # Optional: delete inmemory tables
-delete-local-tables:
-	aws dynamodb delete-table --table-name Payments --endpoint-url http://localhost:8000 --region us-west-2 || true
+delete-tables:
+	aws dynamodb delete-table --table-name Installments --endpoint-url http://localhost:8000 --region us-west-2 || true;
 	aws dynamodb delete-table --table-name Users --endpoint-url http://localhost:8000 --region us-west-2 || true;
+	aws dynamodb delete-table --table-name Loans --endpoint-url http://localhost:8000 --region us-west-2 || true;
 
