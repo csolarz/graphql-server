@@ -1,19 +1,21 @@
 # Pipeline de CI/CD para aplicación Go con Azure Container Registry
 # Trigger: Manual o desde API (GitHub Actions por release)
-# Versión Go: 1.25
 
-trigger: none  # Sin triggers automáticos, se dispara desde GitHub Actions
+trigger: none  # Se ejecuta solo desde GitHub Actions
 
 pool:
   vmImage: 'ubuntu-latest'
 
+# Variables
 variables:
   GO_VERSION: '1.25'
   ACR_NAME: 'graphqlserver.azurecr.io'
   IMAGE_NAME: 'graphqlserver'
   SERVICE_CONNECTION: 'acr-graphqlserver'
-  # El tag de la imagen vendrá como parámetro desde GitHub Actions
-  IMAGE_TAG: $(Build.SourceBranchName)
+
+  # GitHub Actions enviará la variable RELEASE_TAG
+  # Si no llega, usar 'latest' como fallback.
+  IMAGE_TAG: $[coalesce(variables['RELEASE_TAG'], 'latest')]
 
 stages:
 - stage: Test
@@ -113,6 +115,11 @@ stages:
   - job: Docker
     displayName: 'Build and Push to ACR'
     steps:
+    - script: |
+        echo "🔵 RELEASE_TAG recibido: '$(RELEASE_TAG)'"
+        echo "🔵 IMAGE_TAG final usado: '$(IMAGE_TAG)'"
+      displayName: 'Show received tag'
+
     - task: Docker@2
       displayName: 'Build Docker image'
       inputs:
