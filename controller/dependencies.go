@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"os"
+
 	"github.com/csolarz/graphql-server/graph"
 	"github.com/csolarz/graphql-server/infraestructure/document"
 	"github.com/csolarz/graphql-server/usecase/api"
@@ -13,19 +15,27 @@ type dependencies struct {
 }
 
 func registerDependencies() dependencies {
-	dynamo := document.NewDynamoImpl()
+	keyStore := resolveKeyStore()
 
 	// GraphQL dependencies
-	graphService := graphql.NewService(dynamo)
+	graphService := graphql.NewService(keyStore)
 	graphResolver := graph.NewResolver(graphService)
 	graphCtrl := NewGraphQLController(graphResolver)
 
 	// Loan dependencies
-	loanService := api.NewService(dynamo)
+	loanService := api.NewService(keyStore)
 	loanCtrl := NewApiController(loanService)
 
 	return dependencies{
 		GraphQLController: graphCtrl,
 		ApiController:     loanCtrl,
 	}
+}
+
+func resolveKeyStore() document.KeyStore {
+	if cloudProvider := os.Getenv("CLOUD_PROVIDER"); cloudProvider == "AWS" || cloudProvider == "" {
+		return document.NewDynamoImpl()
+	}
+
+	return document.NewCosmosImpl()
 }

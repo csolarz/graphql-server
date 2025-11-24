@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
 )
 
@@ -16,15 +17,15 @@ type CosmosImpl struct {
 // NewCosmosImpl crea el cliente y lee las variables de entorno
 func NewCosmosImpl() *CosmosImpl {
 	endpoint := getEnv("COSMOSDB_ENDPOINT", "")
-	key := getEnv("COSMOSDB_KEY", "")
 	dbName := getEnv("COSMOSDB_DATABASE", "appdb")
 
-	cred, err := azcosmos.NewKeyCredential(key)
+	// Autenticación con Managed Identity o Azure AD
+	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		panic(err)
 	}
 
-	client, err := azcosmos.NewClientWithKey(endpoint, cred, nil)
+	client, err := azcosmos.NewClient(endpoint, cred, nil)
 	if err != nil {
 		panic(err)
 	}
