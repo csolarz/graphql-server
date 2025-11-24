@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
@@ -95,19 +96,36 @@ func (c *CosmosImpl) Set(ctx context.Context, table string, data any) error {
 		return err
 	}
 
-	// Verificamos que el JSON incluya "id"
-	var tmp map[string]any
-	if err := json.Unmarshal(body, &tmp); err != nil {
-		return err
+	id, exists := getID(data)
+	if !exists {
+		return fmt.Errorf("data struct must have an 'ID' field")
 	}
 
-	idVal, ok := tmp["id"].(string)
-	if !ok {
-		return fmt.Errorf("data struct must contain field `id` as string")
-	}
-
-	pk := azcosmos.NewPartitionKeyString(idVal)
+	pk := azcosmos.NewPartitionKeyString(fmt.Sprintf("%s_%d", table, id.(int64)))
 
 	_, err = container.UpsertItem(ctx, pk, body, nil)
 	return err
+}
+
+func getID(obj interface{}) (any, bool) {
+	v := reflect.ValueOf(obj)
+
+	// Si es un puntero, obtener su valor
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+
+	// Debe ser struct
+	if v.Kind() != reflect.Struct {
+		return nil, false
+	}
+
+	// Obtener campo "ID"
+	field := v.FieldByName("ID")
+	if !field.IsValid() {
+		return nil, false
+	}
+
+	// Convertir a interface y retornar
+	return field.Interface(), true
 }
