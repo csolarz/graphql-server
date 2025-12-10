@@ -7,24 +7,31 @@
 type User {
   id: ID!
   name: String!
+  loans: [Loan!]!
 }
 
-type Payment {
+type Loan {
   id: ID!
-  amount: Float!
-  user: User!
+  user_id: ID!
+  user: User! # Usuario que tomó el crédito
+  amount: Float! # Monto del préstamo
+  interest_rate: Float! # Tasa de interés
+  term_months: Int! # Plazo en meses
+  installments: [Installment!]! # Cuotas asociadas
 }
 
-input NewPayment {
-  amount: Float!
-  user_id: ID!
+type Installment {
+  id: ID!
+  loan: Loan!
+  number: Int! # Número de cuota (1, 2, 3, ...)
+  amount: Float! # Monto total de la cuota
+  principal_portion: Float!
+  interest_portion: Float!
+  paid: Boolean!
 }
 
 type Query {
-  payment(id: ID!): Payment
   user(id: ID!): User
-}
-
-type Mutation {
-  create_payment(input: NewPayment!): Payment!
+  loan(id: ID!): Loan
+  installment(id: ID!): Installment
 }
