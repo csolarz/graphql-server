@@ -14,7 +14,6 @@ func StartRouter() *gin.Engine {
 	r.GET("/graphql/", dependencies.GraphQLController.Playground())
 	r.POST("/query", dependencies.GraphQLController.Query())
 
-	r.POST("/loans", dependencies.ApiController.NewLoan)
 	r.GET("/loans/:id", dependencies.ApiController.GetLoan)
 
 	r.POST("/users", dependencies.ApiController.NewUser)

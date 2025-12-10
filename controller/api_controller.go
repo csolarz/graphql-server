@@ -5,8 +5,10 @@ import (
 	"strconv"
 
 	"github.com/csolarz/graphql-server/entities"
+	"github.com/csolarz/graphql-server/infraestructure/logger"
 	"github.com/csolarz/graphql-server/usecase/api"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type ApiController struct {
@@ -27,10 +29,23 @@ func (lc ApiController) NewLoan(c *gin.Context) {
 	loan, err := lc.service.NewLoan(c.Request.Context(), request)
 
 	if err != nil {
+		logger.Log.Errorw("Failed to create loan",
+			zap.Error(err),
+			zap.String("origin", "api_controller.NewLoan"),
+			zap.Int64("user_id", request.UserID),
+			zap.Float64("amount", request.Amount),
+		)
 
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
+
+	logger.Log.Infow("Loan created successfully",
+		zap.Int64("loan_id", loan.ID),
+		zap.Int64("user_id", loan.UserID),
+		zap.Float64("amount", loan.Amount),
+		zap.String("origin", "api_controller.NewLoan"),
+	)
 
 	c.JSON(http.StatusCreated, loan)
 }
@@ -62,10 +77,21 @@ func (lc ApiController) NewUser(c *gin.Context) {
 	user, err := lc.service.NewUser(c.Request.Context(), request)
 
 	if err != nil {
+		logger.Log.Errorw("Failed to create user",
+			zap.Error(err),
+			zap.String("origin", "api_controller.NewUser"),
+			zap.String("user_name", request.Name),
+		)
 
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
+
+	logger.Log.Infow("User created successfully",
+		zap.Int64("user_id", user.ID),
+		zap.String("user_name", user.Name),
+		zap.String("origin", "api_controller.NewUser"),
+	)
 
 	c.JSON(http.StatusCreated, user)
 }

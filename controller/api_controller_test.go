@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/csolarz/graphql-server/entities"
+	"github.com/csolarz/graphql-server/infraestructure/logger"
 	mock_api "github.com/csolarz/graphql-server/usecase/api/mock"
 
 	"github.com/gin-gonic/gin"
@@ -42,6 +43,9 @@ func TestNewLoan_InvalidRequest(t *testing.T) {
 }
 
 func TestNewLoan_ServiceError(t *testing.T) {
+	logger.Init()
+	defer logger.Sync()
+
 	router, mockSvc := setupRouter(t)
 
 	body := entities.LoanRequest{UserID: 10, Amount: 50000}
